@@ -1,0 +1,8 @@
+Flask
+flask-cors
+python-docx
+PyMuPDF
+PyPDF2
+torch
+transformers
+nltk
