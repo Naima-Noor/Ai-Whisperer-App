@@ -26,7 +26,7 @@ const validate = (data) => {
 		email: Joi.string().email().required().label("Email"),
 		password: passwordComplexity().required().label("Password"),
 		confirmPassword: Joi.string().valid(Joi.ref('password')).required().label("Confirm Password")
-            .messages({ 'any.only': 'Confirm password must match password' }),
+			.messages({ 'any.only': 'Confirm password must match password' }),
 	});
 	return schema.validate(data);
 };

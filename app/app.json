@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "AI Whisperer",
+    "slug": "ai-whisperer",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/logoo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logoo.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/logoo.png"
+    },
+    "reactNative": {
+      "enableBridgeless": false
+    },
+    "entryPoint": "./App.js"
+  }
+}

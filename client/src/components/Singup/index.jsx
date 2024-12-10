@@ -47,7 +47,7 @@ const Signup = () => {
             // Simulated signup process without email validation and sending email
 
             // Replace with your actual signup endpoint
-            const signupUrl = "http://localhost:8081/api/users";
+            const signupUrl = "http://localhost:8080/api/users";
             await axios.post(signupUrl, data);
 
             // Simulated success message
