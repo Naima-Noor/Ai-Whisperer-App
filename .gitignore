@@ -13,4 +13,5 @@ backend/venv/
 *.dll
 *.lib
 
-/client/
+/client
+/node_modules

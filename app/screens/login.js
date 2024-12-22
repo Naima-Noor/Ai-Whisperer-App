@@ -18,7 +18,7 @@ const Login = ({ navigation }) => {
         }
 
         try {
-            const response = await axios.post('http://192.168.1.18:8080/api/auth', {
+            const response = await axios.post('http://192.168.1.12:8080/api/auth', {
                 email,
                 password,
             });

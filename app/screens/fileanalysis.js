@@ -17,7 +17,6 @@ export default function FileAnalysis() {
     const [error, setError] = useState(null);
     const [buttonText, setButtonText] = useState('Analyze Text');
     const [highlightedText, setHighlightedText] = useState('');
-
     const handleEmail = async () => {
         if (!result) {
             Alert.alert('No Result', 'Please analyze content before sending an email.');
@@ -31,39 +30,85 @@ export default function FileAnalysis() {
                 return;
             }
 
+            // Generate the PDF file
+            const highlightedHtml = renderHighlightedTextHtml(result.predictions_base, result.predictions_large, result.original_text);
             const content = `
-    Content Authenticity Analysis Results
-    
-    Words: ${result.num_words}
-    Sentences: ${result.num_sentences}
-    Paragraphs: ${result.num_paragraphs}
-    
-    Base Model Prediction:
-    AI Generated: ${calculatePercentage(result.predictions_base)}%
-    Human Generated: ${calculatePercentage(result.predictions_large)}%
-    
-    Large Model Prediction:
-    AI Generated: ${calculatePercentage(result.predictions_large)}%
-    Human Generated: ${(100 - calculatePercentage(result.predictions_large)).toFixed(2)}%
-    
-    Highlighted Text:
-    ${result.original_text}
-    
-    `;
+                <html>
+                    <body>
+                        <h1>Content Authenticity Analysis Results</h1>
+                        <p><strong>Words:</strong> ${result.num_words}</p>
+                        <p><strong>Sentences:</strong> ${result.num_sentences}</p>
+                        <p><strong>Paragraphs:</strong> ${result.num_paragraphs}</p>
+                        <h2>Base Model Prediction</h2>
+                        <p>AI Generated: ${calculatePercentage(result.predictions_base)}%</p>
+                        <p>Human Generated: ${calculatePercentage(result.predictions_large)}%</p>
+                        <h2>Large Model Prediction</h2>
+                        <p>AI Generated: ${calculatePercentage(result.predictions_large)}%</p>
+                        <p>Human Generated: ${(100 - calculatePercentage(result.predictions_large)).toFixed(2)}%</p>
+                        <h2>Highlighted Text</h2>
+                        ${highlightedHtml}
+                    </body>
+                </html>
+            `;
 
+            const { uri } = await Print.printToFileAsync({ html: content });
+            const pdfUri = FileSystem.documentDirectory + 'analysis_result.pdf';
+            await FileSystem.moveAsync({ from: uri, to: pdfUri });
+
+            // Attach the PDF file to the email
             await MailComposer.composeAsync({
-                recipients: [],
+                recipients: [], // Add email addresses here
                 subject: 'Content Analysis Results',
-                body: content,
+                body: 'Please find the attached analysis report.',
+                attachments: [pdfUri], // Attach the PDF file
             });
 
             Alert.alert('Email Sent', 'Results emailed successfully.');
         } catch (error) {
-            console.error(error);
+            console.error('Error sending email:', error);
             Alert.alert('Error', 'Failed to send email.');
         }
     };
 
+
+
+    const renderHighlightedText = (predictions_base, predictions_large, originalText) => {
+        if (!originalText || !predictions_base || !predictions_large) {
+            return <Text>No text available for analysis.</Text>;
+        }
+
+        const sentences = originalText.split(/(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s/);
+
+        return sentences.map((sentence, index) => {
+            let backgroundColor = 'transparent';
+            let color = '#333';
+
+            if (predictions_base[index] === 1 && predictions_large[index] === 1) {
+                backgroundColor = '#d4c6f1';
+                color = '#333';
+            } else if (predictions_base[index] === 1) {
+                backgroundColor = '#f68b8b';
+                color = '#721c24';
+            } else if (predictions_large[index] === 1) {
+                backgroundColor = '#4fa8f9';
+                color = '#0c5460';
+            }
+
+            return (
+                <Text
+                    key={index}
+                    style={{
+                        backgroundColor: backgroundColor,
+                        color: color,
+                        padding: backgroundColor !== 'transparent' ? 3 : 0,
+                        borderRadius: 3,
+                    }}
+                >
+                    {sentence + ' '}
+                </Text>
+            );
+        });
+    };
 
     const handleDownload = async () => {
         if (!result) {
@@ -71,24 +116,26 @@ export default function FileAnalysis() {
             return;
         }
 
+        const highlightedHtml = renderHighlightedTextHtml(result.predictions_base, result.predictions_large, result.original_text);
+
         const content = `
-    <html>
-      <body>
-        <h1>Content Authenticity Analysis Results</h1>
-        <p><strong>Words:</strong> ${result.num_words}</p>
-        <p><strong>Sentences:</strong> ${result.num_sentences}</p>
-        <p><strong>Paragraphs:</strong> ${result.num_paragraphs}</p>
-        <h2>Base Model Prediction</h2>
-        <p>AI Generated: ${calculatePercentage(result.predictions_base)}%</p>
-        <p>Human Generated: ${calculatePercentage(result.predictions_large)}%</p>
-        <h2>Large Model Prediction</h2>
-        <p>AI Generated: ${calculatePercentage(result.predictions_large)}%</p>
-        <p>Human Generated: ${100 - calculatePercentage(result.predictions_large)}%</p>
-        <h2>Highlighted Text</h2>
-        <p>${result.original_text.replace(/\n/g, '<br>')}</p>
-      </body>
-    </html>
-    `;
+            <html>
+              <body>
+                <h1>Content Authenticity Analysis Results</h1>
+                <p><strong>Words:</strong> ${result.num_words}</p>
+                <p><strong>Sentences:</strong> ${result.num_sentences}</p>
+                <p><strong>Paragraphs:</strong> ${result.num_paragraphs}</p>
+                <h2>Base Model Prediction</h2>
+                <p>AI Generated: ${calculatePercentage(result.predictions_base)}%</p>
+                <p>Human Generated: ${calculatePercentage(result.predictions_base)}%</p>
+                <h2>Large Model Prediction</h2>
+                <p>AI Generated: ${calculatePercentage(result.predictions_large)}%</p>
+                <p>Human Generated: ${(100 - calculatePercentage(result.predictions_large)).toFixed(2)}%</p>
+                <h2>Highlighted Text</h2>
+                ${highlightedHtml}
+              </body>
+            </html>
+        `;
 
         try {
             const { uri } = await Print.printToFileAsync({ html: content });
@@ -161,7 +208,7 @@ export default function FileAnalysis() {
         }
 
         try {
-            const response = await axios.post('http://192.168.1.18:5000/analyze', formData, {
+            const response = await axios.post('http://192.168.1.12:5000/analyze', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -178,44 +225,34 @@ export default function FileAnalysis() {
             setButtonText('Analyze Text');
         }
     };
-
-    const renderHighlightedText = (predictions_base, predictions_large, originalText) => {
+    const renderHighlightedTextHtml = (predictions_base, predictions_large, originalText) => {
         if (!originalText || !predictions_base || !predictions_large) {
-            return <Text>No text available for analysis.</Text>;
+            return '<p>No text available for analysis.</p>';
         }
 
         const sentences = originalText.split(/(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s/);
 
-        return sentences.map((sentence, index) => {
-            let backgroundColor = 'transparent';
-            let color = '#333';
+        return sentences
+            .map((sentence, index) => {
+                let backgroundColor = 'transparent';
+                let color = '#333';
 
-            if (predictions_base[index] === 1 && predictions_large[index] === 1) {
-                backgroundColor = '#d4c6f1';
-                color = '#333';
-            } else if (predictions_base[index] === 1) {
-                backgroundColor = '#f68b8b';
-                color = '#721c24';
-            } else if (predictions_large[index] === 1) {
-                backgroundColor = '#4fa8f9';
-                color = '#0c5460';
-            }
+                if (predictions_base[index] === 1 && predictions_large[index] === 1) {
+                    backgroundColor = '#d4c6f1';
+                    color = '#333';
+                } else if (predictions_base[index] === 1) {
+                    backgroundColor = '#f68b8b';
+                    color = '#721c24';
+                } else if (predictions_large[index] === 1) {
+                    backgroundColor = '#4fa8f9';
+                    color = '#0c5460';
+                }
 
-            return (
-                <Text
-                    key={index}
-                    style={{
-                        backgroundColor: backgroundColor,
-                        color: color,
-                        padding: backgroundColor !== 'transparent' ? 3 : 0,
-                        borderRadius: 3,
-                    }}
-                >
-                    {sentence + ' '}
-                </Text>
-            );
-        });
+                return `<span style="background-color: ${backgroundColor}; color: ${color}; padding: 2px; border-radius: 3px;">${sentence} </span>`;
+            })
+            .join(' ');
     };
+
 
     const calculatePercentage = (predictions) => {
         const total = predictions.length;
@@ -304,7 +341,24 @@ export default function FileAnalysis() {
                                 </View>
                             )}
                             <Text style={styles.resultHeader}>Analysis Result</Text>
-
+                            <View style={styles.container}>
+                                <View style={styles.item}>
+                                    <View style={[styles.circle, { backgroundColor: '#4fa8f9' }]} />
+                                    <Text style={styles.text}>Large Model Predicted: AI Generated</Text>
+                                </View>
+                                <View style={styles.item}>
+                                    <View style={[styles.circle, { backgroundColor: '#f68b8b' }]} />
+                                    <Text style={styles.text}>Base Model Predicted: AI Generated</Text>
+                                </View>
+                                <View style={styles.item}>
+                                    <View style={[styles.circle, { backgroundColor: '#d4c6f1' }]} />
+                                    <Text style={styles.text}>Both Models Predicted: AI Generated</Text>
+                                </View>
+                                <View style={styles.item}>
+                                    <View style={[styles.circle, { backgroundColor: 'white', borderWidth: 1, borderColor: '#ccc' }]} />
+                                    <Text style={styles.text}>Both Models Predicted: Human Generated</Text>
+                                </View>
+                            </View>
                             <Text>Words: {result.num_words}</Text>
                             <Text>Sentences: {result.num_sentences}</Text>
                             <Text>Paragraphs: {result.num_paragraphs}</Text>
@@ -312,7 +366,7 @@ export default function FileAnalysis() {
                             {/* Displaying AI/Human predictions for both models */}
                             <Text style={styles.resultSubHeader}>Base Model Prediction:</Text>
                             <Text>AI generated: {calculatePercentage(result.predictions_base)}%</Text>
-                            <Text>Human generated:  {(100 - calculatePercentage(result.predictions_large)).toFixed(2)}%</Text>
+                            <Text>Human generated:  {(100 - calculatePercentage(result.predictions_base)).toFixed(2)}%</Text>
 
                             <Text style={styles.resultSubHeader}>Large Model Prediction:</Text>
                             <Text>AI generated: {calculatePercentage(result.predictions_large)}%</Text>
@@ -333,6 +387,27 @@ export default function FileAnalysis() {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        margin: 10,
+    },
+    item: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '48%', // Adjust the width for 2 columns
+        marginBottom: 10,
+    },
+    circle: {
+        width: 12,
+        height: 12,
+        borderRadius: 5,
+        marginRight: 5,
+    },
+    text: {
+        fontSize: 14,
+    },
     backgroundImage: {
         flex: 1,
         width: '100%',

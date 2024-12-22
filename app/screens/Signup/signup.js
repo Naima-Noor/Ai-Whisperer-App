@@ -80,7 +80,7 @@ const Signup = ({ navigation }) => {
 
         setLoading(true);
         try {
-            const response = await axios.post("http://192.168.1.18:8080/api/users", formData);
+            const response = await axios.post("http://192.168.1.12:8080/api/users", formData);
             if (response.status === 201) {
 
                 setSuccessMessageVisible(true);

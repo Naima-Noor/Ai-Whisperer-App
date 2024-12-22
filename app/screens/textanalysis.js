@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -12,7 +12,6 @@ import {
 import DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import * as MailComposer from 'expo-mail-composer';
-import * as IntentLauncher from 'expo-intent-launcher';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
@@ -27,6 +26,73 @@ const Textanalysis = () => {
     const [error, setError] = useState('');
     const [buttonText, setButtonText] = useState('Analyze Text');
 
+    const calculatePercentages = (predictions) => {
+        const totalSentences = predictions.length;
+        const aiPredictions = predictions.filter((pred) => pred === 1).length;
+        const humanPredictions = totalSentences - aiPredictions;
+
+        return {
+            aiPercentage: ((aiPredictions / totalSentences) * 100).toFixed(2),
+            humanPercentage: ((humanPredictions / totalSentences) * 100).toFixed(2),
+        };
+    };
+
+    const renderHighlightedText = (predictions_base, predictions_large, originalText) => {
+        if (!originalText || !predictions_base || !predictions_large) {
+            return <Text>No text available for analysis.</Text>;
+        }
+
+        const sentences = originalText.split(/(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s/);
+
+        return sentences.map((sentence, index) => {
+            let backgroundColor = 'transparent';
+            let color = '#333';
+
+            if (predictions_base[index] === 1 && predictions_large[index] === 1) {
+                backgroundColor = '#d4c6f1';
+                color = '#333';
+            } else if (predictions_base[index] === 1) {
+                backgroundColor = '#f68b8b';
+                color = '#721c24';
+            } else if (predictions_large[index] === 1) {
+                backgroundColor = '#4fa8f9';
+                color = '#0c5460';
+            }
+
+            return (
+                <Text
+                    key={index}
+                    style={{
+                        backgroundColor: backgroundColor,
+                        color: color,
+                        padding: backgroundColor !== 'transparent' ? 3 : 0,
+                        borderRadius: 3,
+                    }}
+                >
+                    {sentence + ' '}
+                </Text>
+            );
+        });
+    };
+
+    const generateHighlightedHTML = (predictionsBase, predictionsLarge, originalText) => {
+        const sentences = originalText.split(/(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s/);
+        return sentences
+            .map((sentence, index) => {
+                let backgroundColor = 'transparent';
+
+                if (predictionsBase[index] === 1 && predictionsLarge[index] === 1) {
+                    backgroundColor = '#d4c6f1'; // Both models
+                } else if (predictionsBase[index] === 1) {
+                    backgroundColor = '#f68b8b'; // Base model
+                } else if (predictionsLarge[index] === 1) {
+                    backgroundColor = '#4fa8f9'; // Large model
+                }
+
+                return `<span style="background-color: ${backgroundColor}; padding: 2px; border-radius: 3px;">${sentence}</span>`;
+            })
+            .join(' ');
+    };
 
     const handleDownload = async () => {
         if (!result) {
@@ -34,37 +100,39 @@ const Textanalysis = () => {
             return;
         }
 
+        const highlightedText = generateHighlightedHTML(
+            result.predictions_base,
+            result.predictions_large,
+            result.original_text
+        );
+
         const content = `
-    <html>
-      <body>
-        <h1>Content Authenticity Analysis Results</h1>
-        <p><strong>Words:</strong> ${result.num_words}</p>
-        <p><strong>Sentences:</strong> ${result.num_sentences}</p>
-        <p><strong>Paragraphs:</strong> ${result.num_paragraphs}</p>
-        <h2>Base Model Prediction</h2>
-        <p>AI Generated: ${calculatePercentages(result.predictions_base).aiPercentage}%</p>
-        <p>Human Generated: ${calculatePercentages(result.predictions_base).humanPercentage}%</p>
-        <h2>Large Model Prediction</h2>
-        <p>AI Generated: ${calculatePercentages(result.predictions_large).aiPercentage}%</p>
-        <p>Human Generated: ${calculatePercentages(result.predictions_large).humanPercentage}%</p>
-        <h2>Highlighted Text</h2>
-        <p>${result.original_text.replace(/\n/g, '<br>')}</p>
-      </body>
-    </html>
-    `;
+        <html>
+            <body>
+                <h1>Content Authenticity Analysis Results</h1>
+                <p><strong>Words:</strong> ${result.num_words}</p>
+                <p><strong>Sentences:</strong> ${result.num_sentences}</p>
+                <p><strong>Paragraphs:</strong> ${result.num_paragraphs}</p>
+                <h2>Base Model Prediction</h2>
+                <p>AI Generated: ${calculatePercentages(result.predictions_base).aiPercentage}%</p>
+                <p>Human Generated: ${calculatePercentages(result.predictions_base).humanPercentage}%</p>
+                <h2>Large Model Prediction</h2>
+                <p>AI Generated: ${calculatePercentages(result.predictions_large).aiPercentage}%</p>
+                <p>Human Generated: ${calculatePercentages(result.predictions_large).humanPercentage}%</p>
+                <h2>Highlighted Text</h2>
+                <div>${highlightedText}</div>
+            </body>
+        </html>
+        `;
 
         try {
-            // Generate PDF
             const { uri } = await Print.printToFileAsync({ html: content });
-
-            // Move PDF to a shared location
             const pdfUri = FileSystem.documentDirectory + 'analysis_result.pdf';
             await FileSystem.moveAsync({
                 from: uri,
                 to: pdfUri,
             });
 
-            // Open or share the PDF file
             if (Sharing.isAvailableAsync()) {
                 await Sharing.shareAsync(pdfUri);
             } else {
@@ -75,52 +143,67 @@ const Textanalysis = () => {
             Alert.alert('Error', 'Failed to generate or save PDF.');
         }
     };
-
     const handleEmail = async () => {
         if (!result) {
             Alert.alert('No Result', 'Please analyze content before sending an email.');
             return;
         }
 
+        const highlightedText = generateHighlightedHTML(
+            result.predictions_base,
+            result.predictions_large,
+            result.original_text
+        );
+
+        const content = `
+            <html>
+                <body>
+                    <h1>Content Authenticity Analysis Results</h1>
+                    <p><strong>Words:</strong> ${result.num_words}</p>
+                    <p><strong>Sentences:</strong> ${result.num_sentences}</p>
+                    <p><strong>Paragraphs:</strong> ${result.num_paragraphs}</p>
+                    <h2>Base Model Prediction</h2>
+                    <p>AI Generated: ${calculatePercentages(result.predictions_base).aiPercentage}%</p>
+                    <p>Human Generated: ${calculatePercentages(result.predictions_base).humanPercentage}%</p>
+                    <h2>Large Model Prediction</h2>
+                    <p>AI Generated: ${calculatePercentages(result.predictions_large).aiPercentage}%</p>
+                    <p>Human Generated: ${calculatePercentages(result.predictions_large).humanPercentage}%</p>
+                    <h2>Highlighted Text</h2>
+                    <div>${highlightedText}</div>
+                </body>
+            </html>
+        `;
+
         try {
+            // Generate the PDF file
+            const { uri } = await Print.printToFileAsync({ html: content });
+            const pdfUri = FileSystem.documentDirectory + 'analysis_result.pdf';
+            await FileSystem.moveAsync({
+                from: uri,
+                to: pdfUri,
+            });
+
+            // Check if email is available on the device
             const isAvailable = await MailComposer.isAvailableAsync();
             if (!isAvailable) {
                 Alert.alert('Error', 'Email is not available on this device.');
                 return;
             }
 
-            const content = `
-    Content Authenticity Analysis Results:
-    
-    Words: ${result.num_words}
-    Sentences: ${result.num_sentences}
-    Paragraphs: ${result.num_paragraphs}
-    
-    Base Model Prediction:
-    - AI Generated: ${calculatePercentages(result.predictions_base).aiPercentage}%
-    - Human Generated: ${calculatePercentages(result.predictions_base).humanPercentage}%
-    
-    Large Model Prediction:
-    - AI Generated: ${calculatePercentages(result.predictions_large).aiPercentage}%
-    - Human Generated: ${calculatePercentages(result.predictions_large).humanPercentage}%
-    
-    Highlighted Text:
-    ${result.original_text}
-    `;
-
+            // Compose the email with the PDF attachment
             await MailComposer.composeAsync({
-                recipients: [], // Add default recipient email if needed
+                recipients: [], // Add recipients here if needed
                 subject: 'Content Analysis Results',
-                body: content, // Directly include results in the email body
+                body: 'Please find attached the PDF containing the content analysis results.',
+                attachments: [pdfUri],
             });
 
-            Alert.alert('Email Sent', 'Results emailed successfully.');
+            Alert.alert('Email Sent', 'PDF results emailed successfully.');
         } catch (error) {
             console.error(error);
-            Alert.alert('Error', 'Failed to send email.');
+            Alert.alert('Error', 'Failed to generate or send the email.');
         }
     };
-
 
     const handleTextChange = (input) => {
         setText(input);
@@ -158,7 +241,7 @@ const Textanalysis = () => {
         }
 
         try {
-            const response = await axios.post('http://192.168.1.18:5000/analyze', formData, {
+            const response = await axios.post('http://192.168.1.12:5000/analyze', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -171,51 +254,6 @@ const Textanalysis = () => {
         } finally {
             setButtonText('Analyze Text');
         }
-    };
-
-    const calculatePercentages = (predictions) => {
-        const totalSentences = predictions.length;
-        const aiPredictions = predictions.filter((pred) => pred === 1).length;
-        const humanPredictions = totalSentences - aiPredictions;
-
-        return {
-            aiPercentage: ((aiPredictions / totalSentences) * 100).toFixed(2),
-            humanPercentage: ((humanPredictions / totalSentences) * 100).toFixed(2),
-        };
-    };
-
-    const renderHighlightedText = (predictionsBase, predictionsLarge, originalText) => {
-        if (!originalText || !predictionsBase || !predictionsLarge) {
-            return <Text style={styles.errorText}>No text available for analysis.</Text>;
-        }
-
-        const sentences = originalText.split(/(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s/);
-
-        return sentences.map((sentence, index) => {
-            let backgroundColor = 'transparent';
-
-            if (predictionsBase[index] === 1 && predictionsLarge[index] === 1) {
-                backgroundColor = '#d4c6f1'; // Both models
-            } else if (predictionsBase[index] === 1) {
-                backgroundColor = '#f68b8b'; // Base model
-            } else if (predictionsLarge[index] === 1) {
-                backgroundColor = '#4fa8f9'; // Large model
-            }
-
-            return (
-                <Text
-                    key={index}
-                    style={{
-                        backgroundColor,
-                        color: backgroundColor === 'transparent' ? '#000' : '#fff',
-                        paddingHorizontal: 2,
-                        borderRadius: 3,
-                    }}
-                >
-                    {sentence + ' '}
-                </Text>
-            );
-        });
     };
 
     return (
@@ -260,6 +298,24 @@ const Textanalysis = () => {
                                 </TouchableOpacity>
                             </View>
                             <Text style={styles.resultHeader}>Analysis Result</Text>
+                            <View style={styles.containers}>
+                                <View style={styles.item}>
+                                    <View style={[styles.circle, { backgroundColor: '#4fa8f9' }]} />
+                                    <Text style={styles.text}>Large Model Predicted: AI Generated</Text>
+                                </View>
+                                <View style={styles.item}>
+                                    <View style={[styles.circle, { backgroundColor: '#f68b8b' }]} />
+                                    <Text style={styles.text}>Base Model Predicted:             AI Generated</Text>
+                                </View>
+                                <View style={styles.item}>
+                                    <View style={[styles.circle, { backgroundColor: '#d4c6f1' }]} />
+                                    <Text style={styles.text}>Both Models Predicted: AI Generated</Text>
+                                </View>
+                                <View style={styles.item}>
+                                    <View style={[styles.circle, { backgroundColor: 'white', borderWidth: 1, borderColor: '#ccc' }]} />
+                                    <Text style={styles.text}>Both Models Predicted: Human Generated</Text>
+                                </View>
+                            </View>
                             <Text>Words: {result.num_words}</Text>
                             <Text>Sentences: {result.num_sentences}</Text>
                             <Text>Paragraphs: {result.num_paragraphs}</Text>
@@ -276,10 +332,6 @@ const Textanalysis = () => {
                                     result.predictions_large,
                                     result.original_text
                                 )}
-
-
-
-
                             </View>
 
                         </View>
@@ -292,6 +344,27 @@ const Textanalysis = () => {
 };
 
 const styles = StyleSheet.create({
+    containers: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        margin: 10,
+    },
+    item: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '48%', // Adjust the width for 2 columns
+        marginBottom: 10,
+    },
+    circle: {
+        width: 12,
+        height: 12,
+        borderRadius: 5,
+        marginRight: 5,
+    },
+    text: {
+        fontSize: 14,
+    },
     backgroundImage: {
         flex: 1,
         resizeMode: 'cover',

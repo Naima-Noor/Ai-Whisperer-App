@@ -16,6 +16,7 @@ export default function Home() {
     ];
     const texts = [
         'Discover New Features!',
+        'Discover New Features!',
         'Explore Our Latest Updates ',
         'Boost Your Productivity Today!',
     ];
