@@ -18,7 +18,7 @@ const Login = ({ navigation }) => {
         }
 
         try {
-            const response = await axios.post('http://192.168.1.12:8080/api/auth', {
+            const response = await axios.post('http://192.168.1.15:8080/api/auth', {
                 email,
                 password,
             });
@@ -26,7 +26,7 @@ const Login = ({ navigation }) => {
             if (response.status === 200) {
                 const { data } = response;
                 const token = data.data;
-                console.log('Login successful:', token);
+                //console.log('Login successful:', token);
 
                 setSuccessMessageVisible(true);
 

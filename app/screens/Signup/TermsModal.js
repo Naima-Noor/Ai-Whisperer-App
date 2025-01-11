@@ -5,14 +5,13 @@ const TermsModal = ({ visible, onClose }) => {
     return (
         <Modal
             visible={visible}
-            animationType="fade"
             transparent={true}
             onRequestClose={onClose}
         >
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContainer}>
                     <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                        <Text style={styles.closeText}>×</Text>
+                        <Text style={styles.closeText}>X</Text>
                     </TouchableOpacity>
                     <Text style={styles.title}>Terms and Conditions</Text>
                     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -103,6 +102,7 @@ const styles = StyleSheet.create({
     },
     bold: {
         fontWeight: 'bold',
+        fontSize: 18
     },
 });
 

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
     View,
@@ -28,6 +27,8 @@ const Signup = ({ navigation }) => {
     const [termsModalVisible, setTermsModalVisible] = useState(false);
     const [privacyPolicyModalVisible, setPrivacyPolicyModalVisible] = useState(false);
     const [successMessageVisible, setSuccessMessageVisible] = useState(false);
+    const [otp, setOtp] = useState("");
+    const [otpSent, setOtpSent] = useState(false);
 
     const handleInputChange = (name, value) => {
         setFormData({ ...formData, [name]: value });
@@ -41,7 +42,6 @@ const Signup = ({ navigation }) => {
     const validateForm = () => {
         const newErrors = {};
 
-        // Validate fields
         if (!formData.firstName.trim()) {
             newErrors.firstName = "First Name is required!";
         }
@@ -60,12 +60,10 @@ const Signup = ({ navigation }) => {
             newErrors.confirmPassword = "Confirm Password is required!";
         }
 
-        // Check if passwords match
         if (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword) {
             newErrors.confirmPassword = "Passwords do not match!";
         }
 
-        // Check if terms are accepted
         if (!isChecked) {
             newErrors.terms = "Please accept terms and conditions.";
         }
@@ -74,28 +72,107 @@ const Signup = ({ navigation }) => {
         return Object.keys(newErrors).length === 0;
     };
 
+    // const handleSignup = async () => {
+    //     const isValid = validateForm();
+    //     if (!isValid) return;
+
+    //     setLoading(true);
+    //     try {
+    //         const response = await axios.post("http://192.168.1.24:8080/api/users", formData);
+    //         if (response.status === 201) {
+    //             // After successful signup, send OTP
+    //             setOtpSent(true);
+    //             setTimeout(() => {
+    //                 // setSuccessMessageVisible(true);
+    //             }, 500);
+    //         }
+    //     } catch (error) {
+    //         if (error.response) {
+    //             Alert.alert("Error", error.response.data.message);
+    //         } else {
+    //             Alert.alert("Error", "Something went wrong. Please try again.");
+    //         }
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
+
+    // const handleOtpVerification = async () => {
+    //     if (!otp) {
+    //         Alert.alert("Error", "Please enter the OTP.");
+    //         return;
+    //     }
+
+    //     setLoading(true);
+    //     try {
+    //         const response = await axios.post("http://192.168.1.24:8080/api/users/verify-otp", {
+    //             email: formData.email,
+    //             otp: otp,
+    //         });
+
+    //         if (response.status === 200) {
+    //             Alert.alert("Success", "OTP verified successfully! You are now registered.");
+    //             navigation.replace("Login"); // Redirect to Login after successful verification
+    //         }
+    //     } catch (error) {
+    //         if (error.response) {
+    //             Alert.alert("Error", error.response.data.message);
+    //         } else {
+    //             Alert.alert("Error", "OTP verification failed. Please try again.");
+    //         }
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
     const handleSignup = async () => {
         const isValid = validateForm();
         if (!isValid) return;
 
         setLoading(true);
         try {
-            const response = await axios.post("http://192.168.1.12:8080/api/users", formData);
+            // Signup request
+            const response = await axios.post("http://192.168.1.15:8080/api/users", formData);
             if (response.status === 201) {
-
-                setSuccessMessageVisible(true);
-
-
+                setOtpSent(true);
                 setTimeout(() => {
-                    setSuccessMessageVisible(false);
-                    navigation.replace('Login');
-                }, 2000);
+
+                }, 500);
             }
         } catch (error) {
             if (error.response) {
                 Alert.alert("Error", error.response.data.message);
             } else {
                 Alert.alert("Error", "Something went wrong. Please try again.");
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleOtpVerification = async () => {
+        if (!otp) {
+            Alert.alert("Error", "Please enter the OTP.");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const response = await axios.post("http://192.168.1.15:8080/api/users/verify-otp", {
+                email: formData.email,
+                otp: otp,
+            });
+
+            if (response.status === 200) {
+                Alert.alert("Success", "OTP verified successfully! You are now registered.");
+                navigation.replace("Login");
+            } else {
+                Alert.alert("Error", "OTP verification failed. Please try again.");
+            }
+        } catch (error) {
+            if (error.response) {
+                Alert.alert("Error", error.response.data.message);
+            } else {
+                Alert.alert("Error", "OTP verification failed. Please try again.");
             }
         } finally {
             setLoading(false);
@@ -187,15 +264,32 @@ const Signup = ({ navigation }) => {
                         <Text style={styles.successMessageText}>User Created Successfully!</Text>
                     </View>
                 )}
+
+                {/* OTP Modal */}
+                {otpSent && (
+                    <View style={styles.otpModal}>
+                        <Text style={styles.otpTitle}>We have sent an email to verify your email address. Please enter the OTP to verify your email.</Text>
+                        <TextInput
+                            style={styles.otpInput}
+                            placeholder="Enter OTP to verify email"
+                            value={otp}
+                            onChangeText={(value) => setOtp(value)}
+                            keyboardType="numeric"
+                        />
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={handleOtpVerification}
+                        >
+                            <Text style={styles.buttonText}>Verify OTP</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
             </View>
 
-            {/* Terms and Conditions Modal */}
             <TermsModal
                 visible={termsModalVisible}
                 onClose={() => setTermsModalVisible(false)}
             />
-
-            {/* Privacy Policy Modal */}
             <PrivacyPolicyModal
                 visible={privacyPolicyModalVisible}
                 onClose={() => setPrivacyPolicyModalVisible(false)}
@@ -206,6 +300,7 @@ const Signup = ({ navigation }) => {
 
 
 const styles = StyleSheet.create({
+
     backgroundImage: {
         flex: 1,
         width: '100%',
@@ -357,6 +452,31 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#fff',
         marginBottom: 40,
+    },
+    otpModal: {
+        position: "absolute",
+        top: "50%",
+        left: "10%",
+        right: "10%",
+        backgroundColor: "white",
+        padding: 20,
+        borderRadius: 10,
+        alignItems: "center",
+        justifyContent: "center",
+
+    },
+    otpTitle: {
+        fontSize: 16,
+        marginBottom: 10,
+    },
+    otpInput: {
+        width: "80%",
+        padding: 10,
+        marginBottom: 20,
+        borderColor: "#3ea1a0",
+        borderWidth: 1,
+        borderRadius: 5,
+        textAlign: "center",
     },
 });
 

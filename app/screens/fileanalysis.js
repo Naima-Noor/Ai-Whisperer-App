@@ -30,23 +30,43 @@ export default function FileAnalysis() {
                 return;
             }
 
-            // Generate the PDF file
             const highlightedHtml = renderHighlightedTextHtml(result.predictions_base, result.predictions_large, result.original_text);
             const content = `
                 <html>
                     <body>
+                    <div style="margin :20px">
                         <h1>Content Authenticity Analysis Results</h1>
-                        <p><strong>Words:</strong> ${result.num_words}</p>
-                        <p><strong>Sentences:</strong> ${result.num_sentences}</p>
-                        <p><strong>Paragraphs:</strong> ${result.num_paragraphs}</p>
+                        
+    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <div style="width: 20px; height: 20px; background-color: #4fa8f9; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Large Model Predicted: AI Generated</span>
+    </div>
+    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <div style="width: 20px; height: 20px; background-color: #f68b8b; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Base Model Predicted: AI Generated</span>
+    </div>
+    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <div style="width: 20px; height: 20px; background-color: #d4c6f1; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Both Models Predicted: AI Generated</span>
+    </div>
+    <div style="display: flex; align-items: center;">
+        <div style="width: 20px; height: 20px; background-color: white; border: 1px solid #ccc; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Both Models Predicted: Human Generated</span>
+    </div>
+
+
+                        <p><strong> Number of Words:</strong> ${result.num_words}</p>
+                        <p><strong>Number of Sentences:</strong> ${result.num_sentences}</p>
+                        <p><strong>Number of Paragraphs:</strong> ${result.num_paragraphs}</p>
                         <h2>Base Model Prediction</h2>
                         <p>AI Generated: ${calculatePercentage(result.predictions_base)}%</p>
-                        <p>Human Generated: ${calculatePercentage(result.predictions_large)}%</p>
+                        <p>Human Generated: ${(100 - calculatePercentage(result.predictions_base)).toFixed(2)}%</p>
                         <h2>Large Model Prediction</h2>
                         <p>AI Generated: ${calculatePercentage(result.predictions_large)}%</p>
                         <p>Human Generated: ${(100 - calculatePercentage(result.predictions_large)).toFixed(2)}%</p>
                         <h2>Highlighted Text</h2>
                         ${highlightedHtml}
+                        </div>
                     </body>
                 </html>
             `;
@@ -55,12 +75,12 @@ export default function FileAnalysis() {
             const pdfUri = FileSystem.documentDirectory + 'analysis_result.pdf';
             await FileSystem.moveAsync({ from: uri, to: pdfUri });
 
-            // Attach the PDF file to the email
+
             await MailComposer.composeAsync({
-                recipients: [], // Add email addresses here
+                recipients: [],
                 subject: 'Content Analysis Results',
                 body: 'Please find the attached analysis report.',
-                attachments: [pdfUri], // Attach the PDF file
+                attachments: [pdfUri],
             });
 
             Alert.alert('Email Sent', 'Results emailed successfully.');
@@ -82,6 +102,7 @@ export default function FileAnalysis() {
         return sentences.map((sentence, index) => {
             let backgroundColor = 'transparent';
             let color = '#333';
+            let fontSize = 16;
 
             if (predictions_base[index] === 1 && predictions_large[index] === 1) {
                 backgroundColor = '#d4c6f1';
@@ -102,6 +123,7 @@ export default function FileAnalysis() {
                         color: color,
                         padding: backgroundColor !== 'transparent' ? 3 : 0,
                         borderRadius: 3,
+                        fontSize: 16,
                     }}
                 >
                     {sentence + ' '}
@@ -121,18 +143,40 @@ export default function FileAnalysis() {
         const content = `
             <html>
               <body>
+              <div style="margin :20px">
                 <h1>Content Authenticity Analysis Results</h1>
-                <p><strong>Words:</strong> ${result.num_words}</p>
-                <p><strong>Sentences:</strong> ${result.num_sentences}</p>
-                <p><strong>Paragraphs:</strong> ${result.num_paragraphs}</p>
+                
+    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <div style="width: 20px; height: 20px; background-color: #4fa8f9; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Large Model Predicted: AI Generated</span>
+    </div>
+    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <div style="width: 20px; height: 20px; background-color: #f68b8b; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Base Model Predicted: AI Generated</span>
+    </div>
+    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <div style="width: 20px; height: 20px; background-color: #d4c6f1; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Both Models Predicted: AI Generated</span>
+    </div>
+    <div style="display: flex; align-items: center;">
+        <div style="width: 20px; height: 20px; background-color: white; border: 1px solid #ccc; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Both Models Predicted: Human Generated</span>
+    </div>
+ 
+    <br> <br>
+
+                <p><strong>Number of Words:</strong> ${result.num_words}</p>
+                <p><strong>Number of Sentences:</strong> ${result.num_sentences}</p>
+                <p><strong>Number of Paragraphs:</strong> ${result.num_paragraphs}</p>
                 <h2>Base Model Prediction</h2>
                 <p>AI Generated: ${calculatePercentage(result.predictions_base)}%</p>
-                <p>Human Generated: ${calculatePercentage(result.predictions_base)}%</p>
+                <p>Human Generated: ${(100 - calculatePercentage(result.predictions_base)).toFixed(2)}%</p>
                 <h2>Large Model Prediction</h2>
                 <p>AI Generated: ${calculatePercentage(result.predictions_large)}%</p>
                 <p>Human Generated: ${(100 - calculatePercentage(result.predictions_large)).toFixed(2)}%</p>
                 <h2>Highlighted Text</h2>
                 ${highlightedHtml}
+                </div>
               </body>
             </html>
         `;
@@ -208,7 +252,7 @@ export default function FileAnalysis() {
         }
 
         try {
-            const response = await axios.post('http://192.168.1.12:5000/analyze', formData, {
+            const response = await axios.post('http://192.168.1.15:5000/analyze', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -359,20 +403,22 @@ export default function FileAnalysis() {
                                     <Text style={styles.text}>Both Models Predicted: Human Generated</Text>
                                 </View>
                             </View>
-                            <Text>Words: {result.num_words}</Text>
-                            <Text>Sentences: {result.num_sentences}</Text>
-                            <Text>Paragraphs: {result.num_paragraphs}</Text>
-
+                            <Text>__________________________________________________________________</Text>
+                            <Text></Text>
+                            <Text style={{ fontSize: 16 }}>Number of Words: {result.num_words}</Text>
+                            <Text style={{ fontSize: 16 }}>Number of Sentences: {result.num_sentences}</Text>
+                            <Text style={{ fontSize: 16 }}>Number of Paragraphs: {result.num_paragraphs}</Text>
+                            <Text></Text>
                             {/* Displaying AI/Human predictions for both models */}
-                            <Text style={styles.resultSubHeader}>Base Model Prediction:</Text>
-                            <Text>AI generated: {calculatePercentage(result.predictions_base)}%</Text>
-                            <Text>Human generated:  {(100 - calculatePercentage(result.predictions_base)).toFixed(2)}%</Text>
-
-                            <Text style={styles.resultSubHeader}>Large Model Prediction:</Text>
-                            <Text>AI generated: {calculatePercentage(result.predictions_large)}%</Text>
-                            <Text>Human generated: {(100 - calculatePercentage(result.predictions_large)).toFixed(2)}%</Text>
-
-                            <Text style={styles.highlightedHeader}>Highlighted Text</Text>
+                            <Text style={{ fontSize: 20, color: '#f68b8b' }}>Base Model Prediction:</Text>
+                            <Text style={{ fontSize: 16 }}>AI generated: {calculatePercentage(result.predictions_base)}%</Text>
+                            <Text style={{ fontSize: 16 }}>Human generated:  {(100 - calculatePercentage(result.predictions_base)).toFixed(2)}%</Text>
+                            <Text></Text>
+                            <Text style={{ fontSize: 20, color: '#4fa8f9' }}>Large Model Prediction:</Text>
+                            <Text style={{ fontSize: 16 }}>AI generated: {calculatePercentage(result.predictions_large)}%</Text>
+                            <Text style={{ fontSize: 16 }}>Human generated: {(100 - calculatePercentage(result.predictions_large)).toFixed(2)}%</Text>
+                            <Text></Text>
+                            <Text style={{ fontSize: 20 }}>Highlighted Text</Text>
                             {highlightedText && <View style={styles.highlightedTextContainer}>{highlightedText}</View>}
 
                         </View>
@@ -406,7 +452,7 @@ const styles = StyleSheet.create({
         marginRight: 5,
     },
     text: {
-        fontSize: 14,
+        fontSize: 15,
     },
     backgroundImage: {
         flex: 1,
@@ -478,10 +524,10 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 8,
         elevation: 3,
-        opacity: 0.8,
+        backgroundColor: 'white'
     },
     resultHeader: {
-        fontSize: 18,
+        fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 10,
     },
@@ -498,10 +544,12 @@ const styles = StyleSheet.create({
     },
     highlightedText: {
         color: 'black',
+        fontSize: 10, // Increased font size to 18
+
     },
     para: {
         color: 'black',
-        fontSize: 14,
+        fontSize: 16,
         textAlign: 'center',
         marginBottom: '10',
         lineHeight: 24,
@@ -509,18 +557,19 @@ const styles = StyleSheet.create({
     },
     use: {
         color: 'black',
-        fontSize: 14,
+        fontSize: 16,
         textAlign: 'start',
         marginBottom: '10',
         lineHeight: 24,
     },
     header: {
-        fontSize: 24,
+        fontSize: 30,
         fontWeight: 'bold',
-        marginTop: 20,
+        textAlign: 'center',
+        marginBottom: 20,
     },
     sectionTitle: {
-        fontSize: 18,
+        fontSize: 30,
         fontWeight: 'bold',
         marginTop: 20,
     },

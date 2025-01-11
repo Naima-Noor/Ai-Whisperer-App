@@ -7,7 +7,7 @@ const { width, height } = Dimensions.get('window');
 const Welcome2 = ({ navigation }) => {
     return (
         <View style={styles.container}>
-            {/* Header fixed at the top */}
+
             <View style={styles.headerContainer}>
                 <Header />
             </View>
@@ -25,7 +25,7 @@ const Welcome2 = ({ navigation }) => {
 
 
             <View style={styles.buttonContainer}>
-                {/* Skip Button */}
+
                 <TouchableOpacity
                     style={[styles.button, styles.previousButton]}
                     onPress={() => navigation.replace('Welcome1')}

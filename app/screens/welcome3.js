@@ -8,7 +8,6 @@ const Welcome3 = ({ navigation }) => {
     return (
 
         <View style={styles.container}>
-            {/* Header fixed at the top */}
             <View style={styles.headerContainer}>
                 <Header />
             </View>
@@ -55,7 +54,7 @@ const styles = StyleSheet.create({
         width: '100%',
         position: 'absolute',
         top: 0,
-        zIndex: 1, // Ensure the header stays above other elements
+        zIndex: 1,
     },
     backgroundImage: {
         position: 'absolute',

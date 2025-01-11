@@ -16,7 +16,6 @@ export default function Home() {
     ];
     const texts = [
         'Discover New Features!',
-        'Discover New Features!',
         'Explore Our Latest Updates ',
         'Boost Your Productivity Today!',
     ];
@@ -41,7 +40,7 @@ export default function Home() {
         return () => clearInterval(interval);
     }, [currentImageIndex]);
 
-    // Navigate to Text Analysis Screen
+
     const goToTextAnalysis = () => {
         navigation.navigate('TextAnalysis');
     };
@@ -59,7 +58,7 @@ export default function Home() {
                 <Text style={styles.helloText}>Hello, User!</Text>
                 <Text style={styles.greeting}>{greeting}</Text>
 
-                {/* Featured Section */}
+
                 <View style={styles.featuredSection}>
                     <ImageBackground
                         source={images[currentImageIndex]}

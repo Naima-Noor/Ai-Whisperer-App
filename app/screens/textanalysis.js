@@ -46,17 +46,20 @@ const Textanalysis = () => {
 
         return sentences.map((sentence, index) => {
             let backgroundColor = 'transparent';
-            let color = '#333';
-
+            let color = 'black';
+            let fontSize = 16;
             if (predictions_base[index] === 1 && predictions_large[index] === 1) {
                 backgroundColor = '#d4c6f1';
-                color = '#333';
+                color = 'black';
+                fontSize = 16;
             } else if (predictions_base[index] === 1) {
                 backgroundColor = '#f68b8b';
-                color = '#721c24';
+                color = 'black';
+                fontSize = 16;
             } else if (predictions_large[index] === 1) {
                 backgroundColor = '#4fa8f9';
-                color = '#0c5460';
+                color = 'black';
+                fontSize = 16;
             }
 
             return (
@@ -67,6 +70,7 @@ const Textanalysis = () => {
                         color: color,
                         padding: backgroundColor !== 'transparent' ? 3 : 0,
                         borderRadius: 3,
+                        fontSize: fontSize, // Apply the larger font size here
                     }}
                 >
                     {sentence + ' '}
@@ -80,6 +84,7 @@ const Textanalysis = () => {
         return sentences
             .map((sentence, index) => {
                 let backgroundColor = 'transparent';
+
 
                 if (predictionsBase[index] === 1 && predictionsLarge[index] === 1) {
                     backgroundColor = '#d4c6f1'; // Both models
@@ -109,10 +114,30 @@ const Textanalysis = () => {
         const content = `
         <html>
             <body>
+            <div style="margin :20px">
                 <h1>Content Authenticity Analysis Results</h1>
-                <p><strong>Words:</strong> ${result.num_words}</p>
-                <p><strong>Sentences:</strong> ${result.num_sentences}</p>
-                <p><strong>Paragraphs:</strong> ${result.num_paragraphs}</p>
+                             
+    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <div style="width: 20px; height: 20px; background-color: #4fa8f9; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Large Model Predicted: AI Generated</span>
+    </div>
+    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <div style="width: 20px; height: 20px; background-color: #f68b8b; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Base Model Predicted: AI Generated</span>
+    </div>
+    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <div style="width: 20px; height: 20px; background-color: #d4c6f1; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Both Models Predicted: AI Generated</span>
+    </div>
+    <div style="display: flex; align-items: center;">
+        <div style="width: 20px; height: 20px; background-color: white; border: 1px solid #ccc; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Both Models Predicted: Human Generated</span>
+    </div>
+ 
+    <br> <br>
+                <p><strong>Number of Words:</strong> ${result.num_words}</p>
+                <p><strong>Number of Sentences:</strong> ${result.num_sentences}</p>
+                <p><strong>Number of Paragraphs:</strong> ${result.num_paragraphs}</p>
                 <h2>Base Model Prediction</h2>
                 <p>AI Generated: ${calculatePercentages(result.predictions_base).aiPercentage}%</p>
                 <p>Human Generated: ${calculatePercentages(result.predictions_base).humanPercentage}%</p>
@@ -121,6 +146,7 @@ const Textanalysis = () => {
                 <p>Human Generated: ${calculatePercentages(result.predictions_large).humanPercentage}%</p>
                 <h2>Highlighted Text</h2>
                 <div>${highlightedText}</div>
+                </div>
             </body>
         </html>
         `;
@@ -158,24 +184,45 @@ const Textanalysis = () => {
         const content = `
             <html>
                 <body>
+                <div style="margin :20px">
                     <h1>Content Authenticity Analysis Results</h1>
-                    <p><strong>Words:</strong> ${result.num_words}</p>
-                    <p><strong>Sentences:</strong> ${result.num_sentences}</p>
-                    <p><strong>Paragraphs:</strong> ${result.num_paragraphs}</p>
+                                 
+    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <div style="width: 20px; height: 20px; background-color: #4fa8f9; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Large Model Predicted: AI Generated</span>
+    </div>
+    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <div style="width: 20px; height: 20px; background-color: #f68b8b; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Base Model Predicted: AI Generated</span>
+    </div>
+    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <div style="width: 20px; height: 20px; background-color: #d4c6f1; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Both Models Predicted: AI Generated</span>
+    </div>
+    <div style="display: flex; align-items: center;">
+        <div style="width: 20px; height: 20px; background-color: white; border: 1px solid #ccc; border-radius: 50%; margin-right: 10px;"></div>
+        <span style="font-size: 16px; color: #333;">Both Models Predicted: Human Generated</span>
+    </div>
+ 
+    <br> <br>
+                    <p><strong>Number of Words:</strong> ${result.num_words}</p>
+                    <p><strong>Number of Sentences:</strong> ${result.num_sentences}</p>
+                    <p><strong>Number of Paragraphs:</strong> ${result.num_paragraphs}</p>
                     <h2>Base Model Prediction</h2>
                     <p>AI Generated: ${calculatePercentages(result.predictions_base).aiPercentage}%</p>
                     <p>Human Generated: ${calculatePercentages(result.predictions_base).humanPercentage}%</p>
                     <h2>Large Model Prediction</h2>
                     <p>AI Generated: ${calculatePercentages(result.predictions_large).aiPercentage}%</p>
                     <p>Human Generated: ${calculatePercentages(result.predictions_large).humanPercentage}%</p>
-                    <h2>Highlighted Text</h2>
+                    <h2 style={{fontSize: 16}}>Highlighted Text</h2>
                     <div>${highlightedText}</div>
+                    </div>
                 </body>
             </html>
         `;
 
         try {
-            // Generate the PDF file
+
             const { uri } = await Print.printToFileAsync({ html: content });
             const pdfUri = FileSystem.documentDirectory + 'analysis_result.pdf';
             await FileSystem.moveAsync({
@@ -183,16 +230,16 @@ const Textanalysis = () => {
                 to: pdfUri,
             });
 
-            // Check if email is available on the device
+
             const isAvailable = await MailComposer.isAvailableAsync();
             if (!isAvailable) {
                 Alert.alert('Error', 'Email is not available on this device.');
                 return;
             }
 
-            // Compose the email with the PDF attachment
+
             await MailComposer.composeAsync({
-                recipients: [], // Add recipients here if needed
+                recipients: [],
                 subject: 'Content Analysis Results',
                 body: 'Please find attached the PDF containing the content analysis results.',
                 attachments: [pdfUri],
@@ -241,7 +288,7 @@ const Textanalysis = () => {
         }
 
         try {
-            const response = await axios.post('http://192.168.1.12:5000/analyze', formData, {
+            const response = await axios.post('http://192.168.1.15:5000/analyze', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -305,7 +352,7 @@ const Textanalysis = () => {
                                 </View>
                                 <View style={styles.item}>
                                     <View style={[styles.circle, { backgroundColor: '#f68b8b' }]} />
-                                    <Text style={styles.text}>Base Model Predicted:             AI Generated</Text>
+                                    <Text style={styles.text}>Base Model Predicted:AI Generated</Text>
                                 </View>
                                 <View style={styles.item}>
                                     <View style={[styles.circle, { backgroundColor: '#d4c6f1' }]} />
@@ -316,16 +363,22 @@ const Textanalysis = () => {
                                     <Text style={styles.text}>Both Models Predicted: Human Generated</Text>
                                 </View>
                             </View>
-                            <Text>Words: {result.num_words}</Text>
-                            <Text>Sentences: {result.num_sentences}</Text>
-                            <Text>Paragraphs: {result.num_paragraphs}</Text>
-                            <Text style={styles.resultSubHeader}>Base Model Prediction:</Text>
-                            <Text>AI generated: {calculatePercentages(result.predictions_base).aiPercentage}%</Text>
-                            <Text>Human generated: {calculatePercentages(result.predictions_base).humanPercentage}%</Text>
-                            <Text style={styles.resultSubHeader}>Large Model Prediction:</Text>
-                            <Text>AI generated: {calculatePercentages(result.predictions_large).aiPercentage}%</Text>
-                            <Text>Human generated: {calculatePercentages(result.predictions_large).humanPercentage}%</Text>
-                            <Text style={styles.highlightedHeader}>Highlighted Text</Text>
+                            <Text>__________________________________________________________________</Text>
+
+                            <Text></Text>
+                            <Text style={{ fontSize: 16 }}>Number of Words: {result.num_words}</Text>
+                            <Text style={{ fontSize: 16 }}>Number of Sentences: {result.num_sentences}</Text>
+                            <Text style={{ fontSize: 16 }}>Number of Paragraphs: {result.num_paragraphs}</Text>
+                            <Text ></Text>
+                            <Text style={{ fontSize: 20, color: '#f68b8b' }}>Base Model Prediction:</Text>
+                            <Text style={{ fontSize: 16 }}>AI generated: {calculatePercentages(result.predictions_base).aiPercentage}%</Text>
+                            <Text style={{ fontSize: 16 }}>Human generated: {calculatePercentages(result.predictions_base).humanPercentage}%</Text>
+                            <Text ></Text>
+                            <Text style={{ fontSize: 20, color: '#4fa8f9' }}>Large Model Prediction:</Text>
+                            <Text style={{ fontSize: 16 }}>AI generated: {calculatePercentages(result.predictions_large).aiPercentage}%</Text>
+                            <Text style={{ fontSize: 16 }}>Human generated: {calculatePercentages(result.predictions_large).humanPercentage}%</Text>
+                            <Text ></Text>
+                            <Text style={{ fontSize: 20 }}>Highlighted Text</Text>
                             <View style={styles.highlightedTextContainer}>
                                 {renderHighlightedText(
                                     result.predictions_base,
@@ -338,8 +391,8 @@ const Textanalysis = () => {
                     )}
                 </ScrollView>
                 <Navbar />
-            </View>
-        </ImageBackground>
+            </View >
+        </ImageBackground >
     );
 };
 
@@ -363,7 +416,7 @@ const styles = StyleSheet.create({
         marginRight: 5,
     },
     text: {
-        fontSize: 14,
+        fontSize: 15,
     },
     backgroundImage: {
         flex: 1,
@@ -379,7 +432,7 @@ const styles = StyleSheet.create({
 
     },
     header: {
-        fontSize: 24,
+        fontSize: 30,
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: 20,
@@ -391,9 +444,9 @@ const styles = StyleSheet.create({
         padding: 10,
         minHeight: 60,
         maxHeight: 240,
-        backgroundColor: '#fff',
+        backgroundColor: 'white',
         textAlignVertical: 'top',
-        opacity: 0.7
+        fontSize: 16
     },
     submitButton: {
         backgroundColor: '#3bb19b',
@@ -412,14 +465,14 @@ const styles = StyleSheet.create({
     },
     para: {
         color: 'black',
-        fontSize: 14,
+        fontSize: 16,
         textAlign: 'center',
         marginBottom: '10',
         lineHeight: 24,
     },
     use: {
         color: 'black',
-        fontSize: 14,
+        fontSize: 16,
         textAlign: 'start',
         marginBottom: '10',
         lineHeight: 24,
@@ -430,24 +483,27 @@ const styles = StyleSheet.create({
         marginVertical: 10,
     },
     resultContainer: {
+        backgroundColor: 'white',
         marginTop: 20,
         width: '100%',
         padding: 15,
         borderRadius: 8,
         elevation: 3,
-        opacity: 0.8,
+
     },
     resultHeader: {
-        fontSize: 20,
+        fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 10,
     },
     resultSubHeader: {
         marginTop: 10,
         fontWeight: 'bold',
+        fontSize: 29,
+
     },
     resultHeader: {
-        fontSize: 18,
+        fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 10,
 
@@ -455,6 +511,7 @@ const styles = StyleSheet.create({
     resultSubHeader: {
         marginTop: 10,
         fontWeight: 'bold',
+
     },
     highlightedHeader: {
         marginTop: 15,
@@ -462,7 +519,8 @@ const styles = StyleSheet.create({
     },
     highlightedTextContainer: {
         marginTop: 10,
-        marginBottom: 90
+        marginBottom: 90,
+
     },
     highlightedText: {
         color: 'black',

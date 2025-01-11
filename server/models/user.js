@@ -8,6 +8,8 @@ const userSchema = new mongoose.Schema({
 	lastName: { type: String, required: true },
 	email: { type: String, required: true },
 	password: { type: String, required: true },
+	otp: { type: String },  // New field to store OTP temporarily
+	isVerified: { type: Boolean, default: false },  // New field to track OTP verification status
 });
 
 userSchema.methods.generateAuthToken = function () {

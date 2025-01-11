@@ -1,11 +1,10 @@
-// // Navbar.js
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons'; // For icons
-import { useNavigation } from '@react-navigation/native'; // Import navigation hook
+import { FontAwesome5 } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const Navbar = () => {
-    const navigation = useNavigation(); // Access navigation object
+    const navigation = useNavigation();
 
     return (
         <View style={styles.navBar}>
@@ -32,17 +31,17 @@ const Navbar = () => {
 const styles = StyleSheet.create({
     navBar: {
         flexDirection: 'row',
-        justifyContent: 'space-around', // Evenly space out the items
+        justifyContent: 'space-around',
         alignItems: 'center',
-        height: 70, // Increased height to give space for the text
-        backgroundColor: '#34717f', // Transparent background with slight opacity
+        height: 70,
+        backgroundColor: '#34717f',
         borderTopWidth: 1,
         borderTopColor: '#dcdcdc',
         position: 'absolute',
         bottom: 0,
         width: '100%',
-        paddingBottom: 1, // Add some padding for better alignment
-        //  zIndex: 10, // Ensure navbar is above other content
+        paddingBottom: 1,
+
     },
     navItem: {
         justifyContent: 'center',
@@ -50,12 +49,12 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     navText: {
-        fontSize: 12, // Increased font size to be more readable
-        color: 'white', // Darker color for better contrast
+        fontSize: 12,
+        color: 'white',
         marginTop: 5,
         textAlign: 'center',
-        flexWrap: 'wrap', // Allow text to wrap into multiple lines
-        width: '100%', // Allow the text to use the full width
+        flexWrap: 'wrap',
+        width: '100%',
     },
 });
 
