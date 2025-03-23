@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Button, Alert, Text, TouchableOpacity, ImageBackground, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
+import { API_URL1 } from '@env';
 import axios from 'axios';
 import Header from '../components/header';
 import Navbar from '../components/Navbar';
@@ -9,7 +10,10 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import * as MailComposer from 'expo-mail-composer';
+import { BarChart } from 'react-native-chart-kit';
+import { Dimensions } from 'react-native';
 
+const screenWidth = Dimensions.get('window').width;
 
 export default function FileAnalysis() {
     const [fileInfo, setFileInfo] = useState(null);
@@ -252,7 +256,7 @@ export default function FileAnalysis() {
         }
 
         try {
-            const response = await axios.post('http://192.168.1.15:5000/analyze', formData, {
+            const response = await axios.post(`${API_URL1}/analyze`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -414,10 +418,74 @@ export default function FileAnalysis() {
                             <Text style={{ fontSize: 16 }}>AI generated: {calculatePercentage(result.predictions_base)}%</Text>
                             <Text style={{ fontSize: 16 }}>Human generated:  {(100 - calculatePercentage(result.predictions_base)).toFixed(2)}%</Text>
                             <Text></Text>
+                            <BarChart
+                                data={{
+                                    labels: ['AI Generated', 'Human Generated'],
+                                    datasets: [
+                                        {
+                                            data: [
+                                                calculatePercentage(result.predictions_base),
+                                                100 - calculatePercentage(result.predictions_base)
+                                            ],
+                                            color: () => `#f68b8b`, // Darker pink for AI
+                                        },
+                                    ],
+                                }}
+                                width={screenWidth - 80}
+                                height={220}
+                                chartConfig={{
+                                    backgroundColor: '#ffffff',
+                                    backgroundGradientFrom: '#f3f3f3',
+                                    backgroundGradientTo: '#ffffff',
+                                    decimalPlaces: 0,
+                                    color: () => `#f68b8b`, // Black bars
+                                    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // Black labels
+                                    style: {
+                                        borderRadius: 16,
+                                    },
+                                }}
+                                style={{
+                                    marginVertical: 8,
+                                    borderRadius: 16,
+                                }}
+                                fromZero
+                            />
                             <Text style={{ fontSize: 20, color: '#4fa8f9' }}>Large Model Prediction:</Text>
                             <Text style={{ fontSize: 16 }}>AI generated: {calculatePercentage(result.predictions_large)}%</Text>
                             <Text style={{ fontSize: 16 }}>Human generated: {(100 - calculatePercentage(result.predictions_large)).toFixed(2)}%</Text>
                             <Text></Text>
+                            <BarChart
+                                data={{
+                                    labels: ['AI Generated', 'Human Generated'],
+                                    datasets: [
+                                        {
+                                            data: [
+                                                calculatePercentage(result.predictions_large),
+                                                100 - calculatePercentage(result.predictions_large)
+                                            ],
+                                            color: (opacity = 1) => `rgba(79, 168, 249, ${opacity})`,
+                                        },
+                                    ],
+                                }}
+                                width={screenWidth - 80}
+                                height={220}
+                                chartConfig={{
+                                    backgroundColor: '#ffffff',
+                                    backgroundGradientFrom: '#f3f3f3',
+                                    backgroundGradientTo: '#ffffff',
+                                    decimalPlaces: 0,
+                                    color: (opacity = 1) => `rgba(79, 168, 249, ${opacity})`,
+                                    labelColor: () => `rgba(0, 0, 0, 120)`, // Black labels
+                                    style: {
+                                        borderRadius: 16,
+                                    },
+                                }}
+                                style={{
+                                    marginVertical: 8,
+                                    borderRadius: 16,
+                                }}
+                                fromZero
+                            />
                             <Text style={{ fontSize: 20 }}>Highlighted Text</Text>
                             {highlightedText && <View style={styles.highlightedTextContainer}>{highlightedText}</View>}
 

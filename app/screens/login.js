@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground } from 'react-native';
 import axios from 'axios';
+import { API_URL } from '@env';
 
 const Login = ({ navigation }) => {
     const [email, setEmail] = useState('');
@@ -18,7 +19,7 @@ const Login = ({ navigation }) => {
         }
 
         try {
-            const response = await axios.post('http://192.168.1.15:8080/api/auth', {
+            const response = await axios.post(`${API_URL}/auth`, {
                 email,
                 password,
             });

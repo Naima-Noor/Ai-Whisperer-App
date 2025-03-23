@@ -14,11 +14,14 @@ import * as FileSystem from 'expo-file-system';
 import * as MailComposer from 'expo-mail-composer';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-
+import { API_URL1 } from '@env';
 import axios from 'axios';
 import Header from '../components/header';
 import Navbar from '../components/Navbar';
+import { BarChart } from 'react-native-chart-kit';
+import { Dimensions } from 'react-native';
 
+const screenWidth = Dimensions.get('window').width;
 const Textanalysis = () => {
     const [text, setText] = useState('');
     const [file, setFile] = useState(null);
@@ -288,7 +291,7 @@ const Textanalysis = () => {
         }
 
         try {
-            const response = await axios.post('http://192.168.1.15:5000/analyze', formData, {
+            const response = await axios.post(`${API_URL1}/analyze`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -302,6 +305,48 @@ const Textanalysis = () => {
             setButtonText('Analyze Text');
         }
     };
+    // const renderBarChart = (data, chartColor, chartLabelColor) => (
+    //     <BarChart
+    //         data={{
+    //             labels: ['AI Generated', 'Human Generated'],
+    //             datasets: [
+    //                 {
+    //                     data: [
+    //                         parseFloat(calculatePercentages(data).aiPercentage),
+    //                         parseFloat(calculatePercentages(data).humanPercentage),
+    //                     ],
+    //                 },
+    //             ],
+    //         }}
+    //         width={screenWidth - 80} // Chart width
+    //         height={220}
+    //         chartConfig={{
+    //             backgroundColor: '#ffffff',
+    //             backgroundGradientFrom: '#f3f3f3',
+    //             backgroundGradientTo: '#ffffff',
+    //             decimalPlaces: 2, // Decimal places for values
+    //             color: (opacity = 0) => `rgb(${chartColor[0]}, ${chartColor[1]}, ${chartColor[2]}, ${opacity})`, // Bar color
+    //             labelColor: (opacity = 0) => `rgba(0, 0, 0, ${opacity})`, // Label color
+    //             style: {
+    //                 borderRadius: 16,
+    //             },
+    //             yAxisLabel: '', // Remove y-axis label prefix
+    //             propsForLabels: {
+    //                 fontSize: 12,
+    //                 fontWeight: 'bold',
+    //                 fill: chartLabelColor, // Set label text color
+    //             },
+    //             yAxisTicks: [20, 40, 60, 80, 100], // Fixed y-axis intervals
+    //         }}
+    //         style={{
+    //             marginVertical: 8,
+    //             borderRadius: 16,
+    //         }}
+    //         fromZero={true} // Start y-axis from zero
+    //     />
+    // );
+
+
 
     return (
         <ImageBackground
@@ -374,10 +419,92 @@ const Textanalysis = () => {
                             <Text style={{ fontSize: 16 }}>AI generated: {calculatePercentages(result.predictions_base).aiPercentage}%</Text>
                             <Text style={{ fontSize: 16 }}>Human generated: {calculatePercentages(result.predictions_base).humanPercentage}%</Text>
                             <Text ></Text>
+                            <BarChart
+                                data={{
+                                    labels: ['AI Generated', 'Human Generated'],
+                                    datasets: [
+                                        {
+                                            data: [
+                                                parseFloat(calculatePercentages(result.predictions_base).aiPercentage),
+                                                parseFloat(calculatePercentages(result.predictions_base).humanPercentage)
+                                            ],
+
+                                        }
+                                    ]
+                                }}
+                                width={screenWidth - 80} // from react-native
+                                height={220}
+                                chartConfig={{
+                                    backgroundColor: '#ffffff',  // Light background color near white
+                                    backgroundGradientFrom: '#f3f3f3', // Light gradient color near white
+                                    backgroundGradientTo: '#ffffff',  // Light gradient color near white
+                                    decimalPlaces: 2, // optional, defaults to 2dp
+                                    color: (opacity = 1) => `rgba(246, 139, 139, ${opacity})`,
+                                    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,  // Change label color to black
+                                    style: {
+                                        borderRadius: 16
+                                    },
+                                    yAxisLabel: '', // Removes the default label
+                                    yAxisInterval: 1, // Sets the interval between ticks
+                                    propsForLabels: {
+                                        fontSize: 12,
+                                        fontWeight: 'bold',
+                                        fill: '#000' // Set label text color to black
+                                    },
+                                    yAxisTicks: [20, 40, 60, 80, 100], // Custom y-axis ticks with static values
+                                }}
+                                style={{
+                                    marginVertical: 8,
+                                    borderRadius: 16
+                                }
+                                } fromZero={true}
+                            />
+
                             <Text style={{ fontSize: 20, color: '#4fa8f9' }}>Large Model Prediction:</Text>
                             <Text style={{ fontSize: 16 }}>AI generated: {calculatePercentages(result.predictions_large).aiPercentage}%</Text>
                             <Text style={{ fontSize: 16 }}>Human generated: {calculatePercentages(result.predictions_large).humanPercentage}%</Text>
                             <Text ></Text>
+
+                            <BarChart
+                                data={{
+                                    labels: ['AI Generated', 'Human Generated'],
+                                    datasets: [
+                                        {
+                                            data: [
+                                                parseFloat(calculatePercentages(result.predictions_large).aiPercentage),
+                                                parseFloat(calculatePercentages(result.predictions_large).humanPercentage),
+                                            ],
+
+                                        },
+                                    ],
+                                }}
+                                width={screenWidth - 80} // Chart width
+                                height={220}
+                                chartConfig={{
+                                    backgroundColor: '#ffffff',
+                                    backgroundGradientFrom: '#f3f3f3',
+                                    backgroundGradientTo: '#ffffff',
+                                    decimalPlaces: 2, // Decimal places for values
+                                    color: (opacity = 1) => `rgba(79, 168, 249, ${opacity})`, // Bar color
+                                    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // Label color
+                                    style: {
+                                        borderRadius: 16,
+                                    },
+                                    yAxisLabel: '', // Remove y-axis label prefix
+                                    propsForLabels: {
+                                        fontSize: 12,
+                                        fontWeight: 'bold',
+                                        fill: '#000',
+                                    },
+                                    yAxisTicks: [20, 40, 60, 80, 100], // Fixed y-axis intervals
+                                }}
+                                style={{
+                                    marginVertical: 8,
+                                    borderRadius: 16,
+                                }}
+                                fromZero={true} // Start y-axis from zero
+                            />
+
                             <Text style={{ fontSize: 20 }}>Highlighted Text</Text>
                             <View style={styles.highlightedTextContainer}>
                                 {renderHighlightedText(

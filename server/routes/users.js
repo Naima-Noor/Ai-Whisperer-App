@@ -9,13 +9,13 @@ async function sendOTPEmail(userEmail, otp) {
 	const transporter = nodemailer.createTransport({
 		service: "gmail",
 		auth: {
-			user: EMAIL_USER,
-			pass: EMAIL_PASS,
+			user: "naima261914@gmail.com",
+			pass: "crej lbkv xjee wdlx",
 		},
 	});
 
 	const mailOptions = {
-		from: EMAIL_USER,
+		from: "naima261914@gmail.com",
 		to: userEmail,
 		subject: "Verify Your Email for Text AI Whisperer",
 
@@ -58,11 +58,13 @@ router.post("/", async (req, res) => {
 		const hashPassword = await bcrypt.hash(req.body.password, salt);
 
 		// Generate OTP
-		const otp = crypto.randomInt(100000, 999999).toString();
+		const otp = crypto.randomInt(100000, 999999).toString(); // Generate a 6-digit OTP
 
+		// Save OTP to the database (you can use a temporary collection or session)
 		const newUser = new User({ ...req.body, password: hashPassword, otp });
 		await newUser.save();
 
+		// Send OTP to user's email
 		await sendOTPEmail(req.body.email, otp);
 
 		res.status(201).send({ message: "User created. Please verify OTP sent to your email." });
@@ -76,13 +78,14 @@ router.post("/verify-otp", async (req, res) => {
 	try {
 		const { email, otp } = req.body;
 
-
+		// Find user with the given email
 		const user = await User.findOne({ email });
 		if (!user) return res.status(404).send({ message: "User not found!" });
 
+		// Check if OTP matches
 		if (user.otp === otp) {
-
-			user.isVerified = true;
+			// OTP matched, now mark the user as registered
+			user.isVerified = true;  // Mark user as verified
 			await user.save();
 			res.status(200).send({ message: "OTP verified successfully. You are now registered." });
 		} else {

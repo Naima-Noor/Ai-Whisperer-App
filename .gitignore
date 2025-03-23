@@ -16,3 +16,6 @@ backend/venv/
 /client
 /node_modules
 
+client/
+
+/app/.env

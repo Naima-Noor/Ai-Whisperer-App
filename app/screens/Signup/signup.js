@@ -12,6 +12,7 @@ import {
 import axios from "axios";
 import TermsModal from './TermsModal';
 import PrivacyPolicyModal from './privacypolicy';
+import { API_URL } from '@env';
 
 const Signup = ({ navigation }) => {
     const [formData, setFormData] = useState({
@@ -131,7 +132,7 @@ const Signup = ({ navigation }) => {
         setLoading(true);
         try {
             // Signup request
-            const response = await axios.post("http://192.168.1.15:8080/api/users", formData);
+            const response = await axios.post(`${API_URL}/users`, formData);
             if (response.status === 201) {
                 setOtpSent(true);
                 setTimeout(() => {
@@ -157,7 +158,7 @@ const Signup = ({ navigation }) => {
 
         setLoading(true);
         try {
-            const response = await axios.post("http://192.168.1.15:8080/api/users/verify-otp", {
+            const response = await axios.post(`${API_URL}/users/verify-otp`, {
                 email: formData.email,
                 otp: otp,
             });
